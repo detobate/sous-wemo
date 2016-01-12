@@ -19,6 +19,6 @@ Example:
 
 Requirements:
 -------------
-* [DS18B20](https://www.adafruit.com/search?q=DS18B20) One Wire Temperature probe. (or other probes supported by the [w1thermsensor] Python module(https://github.com/timofurrer/w1thermsensor))
+* [DS18B20](https://www.adafruit.com/search?q=DS18B20) One Wire Temperature probe. (or other probes supported by the [w1thermsensor](https://github.com/timofurrer/w1thermsensor) Python module)
 * A GPIO Interface, such as on a RaspberryPi or Beaglebone. [VirtGPIO](https://github.com/BLavery/virtual-GPIO) may work but hasn't been tested.
 * Python2.7
