@@ -9,9 +9,7 @@ from ouimeaux.environment import Environment
 from ouimeaux.utils import matcher
 from ouimeaux.signals import receiver, statechange, devicefound
 
-
-accuracy = 10 # Check temp every 30seconds
-finished = False
+accuracy = 30 # Check temp every 30seconds
 
 def help():
     print("Usage: ./souswemo.py <WeMo_switch_name> <target>[C/F] <timer_minutes> ")
@@ -26,14 +24,30 @@ def getTemp():
 
 def switchOn(switchName):
     print("Turning %s on" % switchName)
-    return True
+    switch = env.get_switch(switchName)
+    result = switch.basicevent.SetBinaryState(BinaryState=1)
+    if result['BinaryState'] == 1:
+        return True
+    else:
+        return False
 
 def switchOff(switchName):
     print("Turning %s off" % switchName)
+    switch = env.get_switch(switchName)
+    result = switch.basicevent.SetBinaryState(BinaryState=0)
+    if result['BinaryState'] == 0:
+        return True
+    else:
+        return False
     return True
 
 def getSwitch(switchName):
-    return False
+    switch = env.get_switch(switchName)
+    result = switch.get_state
+    if result == 1:
+        return True
+    else:
+        return False
 
 class maintainTemp:
     def __init__(self):
@@ -45,14 +59,15 @@ class maintainTemp:
     def run(self, switchName, target):
         while self._running:
             currentTemp = getTemp()
+            currentState = getSwitch(switchName)
             print("Current temp: %s" % currentTemp)
-            if currentTemp < target and getSwitch(switchName) is False:
+            if currentTemp < target and currentState is False:
                 switchOn(switchName)
-            elif currentTemp < target and getSwitch(switchName) is True:
+            elif currentTemp < target and currentState is True:
                 pass
-            elif currentTemp >= target and getSwitch(switchName) is True:
+            elif currentTemp >= target and currentState is True:
                 switchOff(switchName)
-            elif currentTemp >= target and getSwitch(switchName) is False:
+            elif currentTemp >= target and currentState is False:
                 pass
             time.sleep(accuracy)
 
