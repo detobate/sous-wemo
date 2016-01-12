@@ -22,7 +22,7 @@ def getTemp():
     degrees = 60
     return degrees
 
-def switchOn(switchName):
+def switchOn(env, switchName):
     print("Turning %s on" % switchName)
     switch = env.get_switch(switchName)
     result = switch.basicevent.SetBinaryState(BinaryState=1)
@@ -31,7 +31,7 @@ def switchOn(switchName):
     else:
         return False
 
-def switchOff(switchName):
+def switchOff(env, switchName):
     print("Turning %s off" % switchName)
     switch = env.get_switch(switchName)
     result = switch.basicevent.SetBinaryState(BinaryState=0)
@@ -41,7 +41,7 @@ def switchOff(switchName):
         return False
     return True
 
-def getSwitch(switchName):
+def getSwitch(env, switchName):
     switch = env.get_switch(switchName)
     result = switch.get_state
     if result == 1:
@@ -56,17 +56,17 @@ class maintainTemp:
     def terminate(self):
         self._running = False
 
-    def run(self, switchName, target):
+    def run(self, env, switchName, target):
         while self._running:
             currentTemp = getTemp()
-            currentState = getSwitch(switchName)
+            currentState = getSwitch(env, switchName)
             print("Current temp: %s" % currentTemp)
             if currentTemp < target and currentState is False:
-                switchOn(switchName)
+                switchOn(env, switchName)
             elif currentTemp < target and currentState is True:
                 pass
             elif currentTemp >= target and currentState is True:
-                switchOff(switchName)
+                switchOff(env, switchName)
             elif currentTemp >= target and currentState is False:
                 pass
             time.sleep(accuracy)
@@ -93,9 +93,14 @@ def main():
         help()
         exit(1)
 
+    print("Starting WeMo listen server")
+    env = Environment()
+    env.start
+    env.discover(seconds=3)
+
     while getTemp() < target:
-        if getSwitch == False:
-            switchOn(switchName)
+        if getSwitch(env, switchName) == False:
+            switchOn(env, switchName)
         time.sleep(accuracy)
 
     print("Device on switch %s is at target temperature %s" % (switchName, origTarget))
@@ -103,7 +108,7 @@ def main():
     # Start the temp maintainer thread
     # Catch exit exceptions when timer expires
     m = maintainTemp()
-    t1 = Thread(target=m.run, args=(switchName, target))
+    t1 = Thread(target=m.run, args=(env, switchName, target))
     t1.setDaemon(True)
     t1.start()
 
@@ -120,7 +125,7 @@ def main():
     m.terminate()   # Kill the maintainTemp loop
     t1.join()       # Join the maintainTemp thread with main
     # We've finished. Turn the switch off
-    switchOff(switchName)
+    switchOff(env, switchName)
     average = sum(temp)/len(temp)
     print("Timer %s mins reached. Switch %s is now off" % ((timer/60), switchName))
     print("Average temperature was %s with a %s second accuracy" % (average,accuracy))
