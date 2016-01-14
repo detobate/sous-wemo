@@ -23,10 +23,10 @@ def listSwitches(env):
 
 def getTemp():
     # Pick the first available sensor
-    #sensor = W1ThermSensor()
-    #degrees = sensor.get_temperature()
+    sensor = W1ThermSensor()
+    degrees = sensor.get_temperature()
     #degrees = 30
-    degrees = random.randint(55, 65)
+    #degrees = random.randint(55, 65)
     return degrees
 
 def switchOn(switch):

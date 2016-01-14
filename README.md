@@ -22,7 +22,7 @@ List Switches:
     ./souswemo.py -l
     Starting WeMo listen server
     Available switch names are:
-    ['Big lights', 'Little lights', 'Slow Cooker Switch']
+    ['Big lights', 'Little lights', 'Slow Cooker']
 
 Requirements:
 -------------
@@ -34,24 +34,24 @@ Requirements:
 Example:
 --------
 
-    ./souswemo.py 'Big ball' 60C 1
+    ./souswemo.py 'Slow Cooker' 60C 1
     Starting WeMo listen server
-    Turning Big ball on
+    Turning Slow Cooker on
     Heating up. Current temp: 60
-    Device on switch Big ball is at target temperature 60C
-    Turning Big ball off
+    Device on switch Slow Cooker is at target temperature 60C
+    Turning Slow Cooker off
     Press Enter to start the 1 minute timer
-    Current temp: 60C @ 05:23 PM - Switch Big ball is False
+    Current temp: 60C @ 05:23 PM - Switch Slow Cooker is False
 
     Timer started, start time: 05:23 PM
 
-    Current temp: 61C @ 05:24 PM - Switch Big ball is False
-    Current temp: 63C @ 05:24 PM - Switch Big ball is False
-    Current temp: 60C @ 05:24 PM - Switch Big ball is False
-    Current temp: 57C @ 05:24 PM - Switch Big ball is False
-    Turning Big ball on
-    Current temp: 61C @ 05:25 PM - Switch Big ball is True
-    Turning Big ball off
+    Current temp: 61C @ 05:24 PM - Switch Slow Cooker is False
+    Current temp: 63C @ 05:24 PM - Switch Slow Cooker is False
+    Current temp: 60C @ 05:24 PM - Switch Slow Cooker is False
+    Current temp: 57C @ 05:24 PM - Switch Slow Cooker is False
+    Turning Slow Cooker on
+    Current temp: 61C @ 05:25 PM - Switch Slow Cooker is True
+    Turning Slow Cooker off
     Switch is already off
-    Timer 1 mins reached. Switch Big ball is now off
+    Timer 1 mins reached. Switch Slow Cooker is now off
     Average temperature was 58 with a 15 second accuracy
