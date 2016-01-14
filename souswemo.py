@@ -3,13 +3,14 @@ import sys
 import datetime
 import time
 import ouimeaux
+import random
 from threading import Thread
 from w1thermsensor import W1ThermSensor
 from ouimeaux.environment import Environment
 from ouimeaux.utils import matcher
 from ouimeaux.signals import receiver, statechange, devicefound
 
-accuracy = 10 # Check temp every 10seconds
+accuracy = 15 # Check temp every 10seconds
 
 def help():
     print("Usage: ./souswemo.py <WeMo_switch_name> <target>[C/F] <timer_minutes> ")
@@ -24,31 +25,33 @@ def getTemp():
     # Pick the first available sensor
     #sensor = W1ThermSensor()
     #degrees = sensor.get_temperature()
-    degrees = 30
+    #degrees = 30
+    degrees = random.randint(55, 65)
     return degrees
 
 def switchOn(switch):
-    print("Turning %s on" % switch.name)
-    result = switch.basicevent.SetBinaryState(BinaryState=1)
-    if result['BinaryState'] == 1:
-        return True
+    if getSwitch(switch) is False:
+        print("Turning %s on" % switch.name)
+        result = switch.basicevent.SetBinaryState(BinaryState=1)
+        if result['BinaryState'] == "Error":
+            print("Error: Couldn't turn %s on" % switch.name)
     else:
-        return False
+        print("Switch is already on")
 
 def switchOff(switch):
-    print("Turning %s off" % switch.name)
-    result = switch.basicevent.SetBinaryState(BinaryState=0)
-    if result['BinaryState'] == 0:
-        return True
+    if getSwitch(switch) is True:
+        print("Turning %s off" % switch.name)
+        result = switch.basicevent.SetBinaryState(BinaryState=0)
+        if result['BinaryState'] == "Error":
+            print("Error: Couldn't turn %s off" % switch.name)
     else:
-        return False
-    return True
+        print("Switch is already off")
 
 def getSwitch(switch):
-    result = switch.get_state()
+    result = switch.get_state(force_update=True)
     if result == 1:
         return True
-    else:
+    elif result == 0:
         return False
 
 class maintainTemp:
@@ -62,7 +65,7 @@ class maintainTemp:
         while self._running:
             currentTemp = getTemp()
             currentState = getSwitch(switch)
-            print("Current temp: %sC @ %s" % (currentTemp, time.strftime("%I:%M %p", time.localtime())))
+            print("Current temp: %sC @ %s - Switch %s is %s" % (currentTemp, time.strftime("%I:%M %p", time.localtime()), switch.name, currentState))
             if currentTemp < target and currentState is False:
                 switchOn(switch)
             elif currentTemp < target and currentState is True:
@@ -75,9 +78,10 @@ class maintainTemp:
 
 def main():
     print("Starting WeMo listen server")
+    global env
     env = Environment()
     env.start()
-    env.discover(seconds=1)
+    env.discover(seconds=3)
 
     if sys.argv[1] == "-l":
         listSwitches(env)
@@ -115,9 +119,11 @@ def main():
     while getTemp() < target:
         if getSwitch(switch) == False:
             switchOn(switch)
+        print("Heating up. Current temp: %s" % getTemp())
         time.sleep(accuracy)
 
     print("Device on switch %s is at target temperature %s" % (switchName, origTarget))
+    switchOff(switch)
 
     # Start the temp maintainer thread
     # Catch exit exceptions when timer expires
@@ -136,10 +142,9 @@ def main():
         currentTime = time.time()
         time.sleep(accuracy)
 
-    m.terminate()   # Kill the maintainTemp loop
-    t1.join()       # Join the maintainTemp thread with main
-    # We've finished. Turn the switch off
-    switchOff(switch)
+    m.terminate()       # Kill the maintainTemp loop
+    t1.join()           # Join the maintainTemp thread with main
+    switchOff(switch)   # We've finished. Turn the switch off, no matter the current state.
     average = sum(temp)/len(temp)
     print("Timer %s mins reached. Switch %s is now off" % ((timer/60), switch.name))
     print("Average temperature was %s with a %s second accuracy" % (average,accuracy))
