@@ -7,10 +7,8 @@ import random
 from threading import Thread
 from w1thermsensor import W1ThermSensor
 from ouimeaux.environment import Environment
-from ouimeaux.utils import matcher
-from ouimeaux.signals import receiver, statechange, devicefound
 
-accuracy = 15 # Check temp every 10seconds
+accuracy = 30 # Check temp every 30seconds
 
 def help():
     print("Usage: ./souswemo.py <WeMo_switch_name> <target>[C/F] <timer_minutes> ")
@@ -77,11 +75,11 @@ class maintainTemp:
             time.sleep(accuracy)
 
 def main():
-    print("Starting WeMo listen server")
+    print("Finding WeMo switches")
     global env
     env = Environment()
     env.start()
-    env.discover(seconds=3)
+    env.discover(seconds=4)
 
     if sys.argv[1] == "-l":
         listSwitches(env)
@@ -113,7 +111,7 @@ def main():
             exit(1)
         timer = (int(sys.argv[3]) * 60)
     except:
-        help(env)
+        help()
         exit(1)
 
     while getTemp() < target:
@@ -122,7 +120,7 @@ def main():
         print("Heating up. Current temp: %s" % getTemp())
         time.sleep(accuracy)
 
-    print("Device on switch %s is at target temperature %s" % (switchName, origTarget))
+    print("Device on switch %s is at target temperature %s" % (switchName, getTemp()))
     switchOff(switch)
 
     # Start the temp maintainer thread
@@ -147,7 +145,7 @@ def main():
     switchOff(switch)   # We've finished. Turn the switch off, no matter the current state.
     average = sum(temp)/len(temp)
     print("Timer %s mins reached. Switch %s is now off" % ((timer/60), switch.name))
-    print("Average temperature was %s with a %s second accuracy" % (average,accuracy))
+    print("Average temperature was %sC with a %s second accuracy" % (average,accuracy))
 
 
 if __name__ == "__main__":
