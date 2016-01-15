@@ -61,7 +61,9 @@ Example:
 Troubleshooting:
 ----------------
 Q: My switch isn't found but I can see it in the WeMo app.
+
 A: Try increasing the [discovery timer](https://github.com/detobate/sous-wemo/blob/master/souswemo.py#L84)
 
 Q: It can't find my temperature probe.
+
 A: Make sure your probe shows up in: ``/sys/bus/w1/devices/``.  If not, check you've added `dtoverlay=w1-gpio` to your `/boot/config.txt`
