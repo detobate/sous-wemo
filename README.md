@@ -27,15 +27,16 @@ List Switches:
 Requirements:
 -------------
 * [DS18B20](https://www.adafruit.com/search?q=DS18B20) One Wire temperature probe. (or other probes supported by the [w1thermsensor](https://github.com/timofurrer/w1thermsensor) Python module)
-* A GPIO Interface, such as on a RaspberryPi or Beaglebone. [VirtGPIO](https://github.com/BLavery/virtual-GPIO) may work but hasn't been tested.
-* Python2.7 and modules listed in [requirements.txt](https://raw.githubusercontent.com/detobate/sous-wemo/master/requirements.txt)
+Follow [these](http://www.modmypi.com/blog/ds18b20-one-wire-digital-temperature-sensor-and-the-raspberry-pi) instructions if using a RaspberryPi.
+* A GPIO Interface, such as on a RaspberryPi or Beaglebone. [VirtGPIO](https://github.com/BLavery/virtual-GPIO) may also work but hasn't been tested.
+* Python2.6 and modules listed in [requirements.txt](https://raw.githubusercontent.com/detobate/sous-wemo/master/requirements.txt)
 
 
 Example:
 --------
 
     ./souswemo.py 'Slow Cooker' 60C 1
-    Starting WeMo listen server
+    Finding WeMo switches
     Turning Slow Cooker on
     Heating up. Current temp: 60
     Device on switch Slow Cooker is at target temperature 60C
@@ -55,3 +56,12 @@ Example:
     Switch is already off
     Timer 1 mins reached. Switch Slow Cooker is now off
     Average temperature was 58 with a 15 second accuracy
+
+
+Troubleshooting:
+----------------
+Q: My switch isn't found but I can see it in the WeMo app.
+A: Try increasing the [discovery timer](https://github.com/detobate/sous-wemo/blob/master/souswemo.py#L84)
+
+Q: It can't find my temperature probe.
+A: Make sure your probe shows up in: ``/sys/bus/w1/devices/``.  If not, check you've added `dtoverlay=w1-gpio` to your `/boot/config.txt`
