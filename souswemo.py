@@ -8,7 +8,7 @@ from threading import Thread
 from w1thermsensor import W1ThermSensor
 from ouimeaux.environment import Environment
 
-accuracy = 30 # Check temp every 30seconds
+accuracy = 15 # Check temp every 15seconds
 
 def help():
     print("Usage: ./souswemo.py <WeMo_switch_name> <target>[C/F] <timer_minutes> ")
@@ -20,11 +20,8 @@ def listSwitches(env):
     print(env.list_switches())
 
 def getTemp():
-    # Pick the first available sensor
-    sensor = W1ThermSensor()
+    sensor = W1ThermSensor()            # Picks the first available sensor
     degrees = sensor.get_temperature()
-    #degrees = 30
-    #degrees = random.randint(55, 65)
     return degrees
 
 def switchOn(switch):
@@ -100,11 +97,12 @@ def main():
         exit(1)
 
     try:
-        if sys.argv[2][-1] == "F":
+        targetScale = sys.argv[2][-1]
+        if targetScale == "F":
             targetF = int(sys.argv[2][:-1])
             # Convert to celsius because we're not American
             target = ((targetF - 32) / 1.8)
-        elif sys.argv[2][-1] == "C":
+        elif targetScale == "C":
             target = int(sys.argv[2][:-1])
         else:
             print("Error: Please specify either [C]elsius or [F]ahrenheit")
@@ -117,7 +115,7 @@ def main():
     while getTemp() < target:
         if getSwitch(switch) == False:
             switchOn(switch)
-        print("Heating up. Current temp: %s" % getTemp())
+        print("Heating up. Current temp: %sC" % getTemp())
         time.sleep(accuracy)
 
     print("Device on switch %s is at target temperature %s" % (switchName, getTemp()))
@@ -136,16 +134,18 @@ def main():
     temp = [] # Build a list to keep track of temperature
     print("Timer started, start time: %s\n" % time.strftime("%I:%M %p", time.localtime(startTime)))
     while currentTime < (startTime + timer):
-        temp.append(getTemp())
-        currentTime = time.time()
         time.sleep(accuracy)
-
-    m.terminate()       # Kill the maintainTemp loop
+        currentTime = time.time()
+        temp.append(getTemp())
+        timeLeft = (startTime + timer) - currentTime
+        if (round(timeLeft)/60) < 15:
+            print("%s minutes left" % (round(timeLeft/60,0)))
+    m.terminate()       # Kill the maintainTemp loop once timer finished
     t1.join()           # Join the maintainTemp thread with main
     switchOff(switch)   # We've finished. Turn the switch off, no matter the current state.
     average = sum(temp)/len(temp)
     print("Timer %s mins reached. Switch %s is now off" % ((timer/60), switch.name))
-    print("Average temperature was %sC with a %s second accuracy" % (average,accuracy))
+    print("Average temperature was %sC with a %s second accuracy" % (round(average,3),accuracy))
 
 
 if __name__ == "__main__":
