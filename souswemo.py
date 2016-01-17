@@ -13,7 +13,9 @@ accuracy = 15 # Check temp every 15seconds
 def help():
     print("Usage: ./souswemo.py <WeMo_switch_name> <target>[C/F] <timer_minutes> ")
     print("Example: ./souswemo.py 'Slow Cooker' 60C 120")
-    print("\nList available switches: ./souswemo.py -l")
+    print("\nOther options:")
+    print(" -l \tList available WeMo switches")
+    print(" -m \tMonitor current temperature")
 
 def listSwitches(env):
     print("Available switch names are:")
@@ -49,6 +51,19 @@ def getSwitch(switch):
     elif result == 0:
         return False
 
+class watchTemp:
+    def __init__(self):
+        self._running = True
+
+    def terminate(self):
+        self._running = False
+
+    def run(self):
+        while self._running:
+            currentTemp = getTemp()
+            print("Current temperature is %sC / %sF" % (currentTemp, (currentTemp * 1.8 + 32)))
+            time.sleep(accuracy)
+
 class maintainTemp:
     def __init__(self):
         self._running = True
@@ -56,11 +71,13 @@ class maintainTemp:
     def terminate(self):
         self._running = False
 
-    def run(self, switch, target):
+    def run(self, switch, target, targetScale):
         while self._running:
             currentTemp = getTemp()
             currentState = getSwitch(switch)
-            print("Current temp: %sC @ %s - Switch %s is %s" % (currentTemp, time.strftime("%I:%M %p", time.localtime()), switch.name, currentState))
+            if targetScale == "F":
+                currentTemp = currentTemp * 1.8 + 32
+            print("Current temp: %s%s @ %s - Switch %s is %s" % (currentTemp, targetScale, time.strftime("%I:%M %p", time.localtime()), switch.name, currentState))
             if currentTemp < target and currentState is False:
                 switchOn(switch)
             elif currentTemp < target and currentState is True:
@@ -72,19 +89,32 @@ class maintainTemp:
             time.sleep(accuracy)
 
 def main():
-    print("Finding WeMo switches")
-    global env
-    env = Environment()
-    env.start()
-    env.discover(seconds=4)
 
     if sys.argv[1] == "-l":
+        env = Environment()
+        env.start()
+        env.discover(seconds=4)
         listSwitches(env)
         exit(0)
 
-    if len(sys.argv) != 4:
+    elif sys.argv[1] == "-m":
+        print("Monitoring current temperatures every %s seconds" % accuracy)
+        print("Press Enter to quit")
+        m = watchTemp()
+        t1 = Thread(target=m.run)
+        t1.setDaemon(True)
+        t1.start()
+        raw_input()
+        exit(0)
+
+    elif len(sys.argv) != 4 or sys.argv[1] == "--help":
         help()
         exit(1)
+
+    print("Finding WeMo switches")
+    env = Environment()
+    env.start()
+    env.discover(seconds=4)
 
     switchName = sys.argv[1]
     origTarget = sys.argv[2]
@@ -115,16 +145,19 @@ def main():
     while getTemp() < target:
         if getSwitch(switch) == False:
             switchOn(switch)
-        print("Heating up. Current temp: %sC" % getTemp())
+        if targetScale == "F":
+            print("Heating up. Current temp: %sF" % (getTemp() * 1.8 + 32))
+        else:
+            print("Heating up. Current temp: %sC" % getTemp())
         time.sleep(accuracy)
 
-    print("Device on switch %s is at target temperature %s" % (switchName, getTemp()))
+    print("Device on switch %s is at target temperature %s" % (switchName, origTarget))
     switchOff(switch)
 
     # Start the temp maintainer thread
     # Catch exit exceptions when timer expires
     m = maintainTemp()
-    t1 = Thread(target=m.run, args=(switch, target))
+    t1 = Thread(target=m.run, args=(switch, target, targetScale))
     t1.setDaemon(True)
     t1.start()
 
@@ -138,14 +171,22 @@ def main():
         currentTime = time.time()
         temp.append(getTemp())
         timeLeft = (startTime + timer) - currentTime
-        if (round(timeLeft)/60) < 15:
-            print("%s minutes left" % (round(timeLeft/60,0)))
+        if timeLeft > 0 and timeLeft < 60:
+            print("%s seconds left" % int(round(timeLeft)))
+        elif int(round(timeLeft)/60) == 1:
+            print("1 minute left")
+        elif (round(timeLeft)/60) < 15:
+            print("%s minutes left" % int(round(timeLeft/60,1)))
+
     m.terminate()       # Kill the maintainTemp loop once timer finished
     t1.join()           # Join the maintainTemp thread with main
     switchOff(switch)   # We've finished. Turn the switch off, no matter the current state.
     average = sum(temp)/len(temp)
+    if targetScale == "F":
+        average = average * 1.8 + 32
+
     print("Timer %s mins reached. Switch %s is now off" % ((timer/60), switch.name))
-    print("Average temperature was %sC with a %s second accuracy" % (round(average,3),accuracy))
+    print("Average temperature was %s%s with a %s second accuracy" % (round(average,3), targetScale, accuracy))
 
 
 if __name__ == "__main__":
