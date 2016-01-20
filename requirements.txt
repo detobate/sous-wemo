@@ -1,2 +1,4 @@
 w1thermsensor
 ouimeaux
+pygal
+cairosvg
