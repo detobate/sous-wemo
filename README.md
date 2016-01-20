@@ -27,8 +27,7 @@ List Switches:
 Requirements:
 -------------
 * Waterproof [DS18B20](https://www.adafruit.com/search?q=DS18B20) One Wire temperature probe. (or other probes supported by the [w1thermsensor](https://github.com/timofurrer/w1thermsensor) Python module)
-
-Follow [these](http://www.modmypi.com/blog/ds18b20-one-wire-digital-temperature-sensor-and-the-raspberry-pi) instructions if using a RaspberryPi.
+    Follow [these](http://www.modmypi.com/blog/ds18b20-one-wire-digital-temperature-sensor-and-the-raspberry-pi) instructions if using a RaspberryPi.
 * A GPIO Interface, such as on a RaspberryPi or Beaglebone. [VirtGPIO](https://github.com/BLavery/virtual-GPIO) may also work but hasn't been tested.
 * Python2.6 and modules listed in [requirements.txt](https://raw.githubusercontent.com/detobate/sous-wemo/master/requirements.txt)
 
@@ -68,11 +67,12 @@ Troubleshooting:
 ----------------
 Q: My switch isn't found but I can see it in the WeMo app.
 
-A: Try increasing the [discovery timer](https://github.com/detobate/sous-wemo/blob/master/souswemo.py#L79)
+A: Try increasing the [discovery timer](https://github.com/detobate/sous-wemo/blob/master/souswemo.py#L141)
 
 Q: It can't find my temperature probe.
 
-A: Make sure your probe shows up in: ``/sys/bus/w1/devices/``.  If not, check you've added `dtoverlay=w1-gpio` to your `/boot/config.txt`
+A: Make sure your probe shows up in: ``/sys/bus/w1/devices/``.  
+If not, check you've added `dtoverlay=w1-gpio` to your `/boot/config.txt`
 
 
 Extra notes:
