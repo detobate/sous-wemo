@@ -11,7 +11,7 @@ Install the required python modules:
 
 Usage:
 
-    usage: souswemo.py [-h] [--list] [--mon] [-s Switch Name] [-t TEMP] [-T TIME] [-f FUDGE]
+    usage: souswemo.py [-h] [--list] [--mon] [-s 'Switch Name'] [-t TEMP] [-T TIME] [-f FUDGE]
 
     A WeMo control for sous-vide cooking
 
@@ -47,7 +47,7 @@ Requirements:
 Example:
 --------
 
-    ./souswemo.py 'Slow Cooker' 75C 360
+    ./souswemo.py -s 'Slow Cooker' -t 75C -T 360
     Finding WeMo switches
     Turning Slow Cooker Switch on
     Device on switch Slow Cooker Switch is at target temperature 75C
@@ -84,9 +84,11 @@ A: Try increasing the [discovery timer](https://github.com/detobate/sous-wemo/bl
 Q: It can't find my temperature probe.
 
 A: Make sure your probe shows up in: ``/sys/bus/w1/devices/``.  
-If not, check you've added `dtoverlay=w1-gpio` to your `/boot/config.txt`
+    If not, check you've added `dtoverlay=w1-gpio` to your `/boot/config.txt` (RaspberryPi)
 
 
 Extra notes:
 ------------
-- Accuracy value of 30 seconds appears to produce a deviation of ± approx. 0.7C in my slow cooker set on low.
+- Accuracy value of 30 seconds appears to produce a deviation of approx. ± 0.7C in my slow cooker set on low.
+    15 sec accuracy helps, but fluctuations tend to decrease during longer cooks
+    Use -f "Fudge Factor" to help pre-empt the fluctuations.
