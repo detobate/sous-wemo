@@ -89,6 +89,6 @@ A: Make sure your probe shows up in: ``/sys/bus/w1/devices/``.
 
 Extra notes:
 ------------
-- Accuracy value of 30 seconds appears to produce a deviation of approx. ± 0.7C in my slow cooker set on low.
-    15 sec accuracy helps, but fluctuations tend to decrease during longer cooks
-    Use -f "Fudge Factor" to help pre-empt the fluctuations.
+The WeMo switch gets turned off/on as soon as it hits the target temperature, this can cause a slight fluctuation either side of the target temp.
+
+You can choose to either tweak the accuracy (how often the script checks the temperature), or use -f "Fudge Factor" to pre-emptively trigger the switch slightly earlier.

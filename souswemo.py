@@ -8,15 +8,14 @@ from threading import Thread
 from w1thermsensor import W1ThermSensor
 from ouimeaux.environment import Environment
 
-accuracy = 15 # Check temp every 15seconds
-
 parser = argparse.ArgumentParser(description='A WeMo control for sous-vide cooking')
 parser.add_argument('--list', help='List available WeMo switches', action='store_true')
 parser.add_argument('--mon', help='Monitor current temperature without controlling a switch', action='store_true')
-parser.add_argument('-s', dest='switch', metavar="Switch Name", help='WeMo Switch Name')
+parser.add_argument('-s', dest='switch', metavar="'Switch Name'", help='WeMo Switch Name')
 parser.add_argument('-t', dest='temp', help='Target Temperature suffixed with either C or F')
 parser.add_argument('-T', dest='time', type=int, help='Timer in minutes')
 parser.add_argument('-f', dest='fudge', help='Fudge factor. Pre-emptively turn switch off/on. Provide value w/ suffix: C or F')
+parser.add_argument('-a', dest='accuracy', type=int, default=15, help='How often to check the temperature in seconds (default 15)')
 args = parser.parse_args()
 
 if args.mon is True and args.list is True:
@@ -127,6 +126,8 @@ class maintainTemp:
             time.sleep(accuracy)
 
 def main():
+
+    accuracy = args.accuracy
 
     if args.list:
         env = Environment()
