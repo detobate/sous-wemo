@@ -7,19 +7,31 @@ Usage:
 ------
 Install the required python modules:
 
-    pip install -r requirements.txt
+    sudo pip install -r requirements.txt
 
 Usage:
 
-    ./souswemo.py <WeMo_switch_name> <target>[C/F] <timer_minutes>
+    usage: souswemo.py [-h] [--list] [--mon] [-s Switch Name] [-t TEMP] [-T TIME] [-f FUDGE]
+
+    A WeMo control for sous-vide cooking
+
+    optional arguments:
+      -h, --help      show this help message and exit
+      --list          List available WeMo switches
+      --mon           Monitor current temperature without controlling a switch
+      -s Switch Name  WeMo Switch Name
+      -t TEMP         Target Temperature suffixed with either C or F
+      -T TIME         Timer in minutes
+      -f FUDGE        Fudge factor. Pre-emptively turn switch off/on. Provide
+                      value w/ suffix: C or F
 
 Example:
 
-    ./souswemo.py 'Slow Cooker Switch' 60C 120
+    ./souswemo.py -s 'Slow Cooker' -t 60C -T 120
 
 List Switches:
 
-    ./souswemo.py -l
+    ./souswemo.py --list
     Starting WeMo listen server
     Available switch names are:
     ['Big lights', 'Little lights', 'Slow Cooker']
