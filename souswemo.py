@@ -4,11 +4,12 @@ import time
 import ouimeaux
 import argparse
 import pygal
+import cairo
 from threading import Thread
 from w1thermsensor import W1ThermSensor
 from ouimeaux.environment import Environment
 
-parser = argparse.ArgumentParser(description='A WeMo control for sous-vide cooking')
+parser = argparse.ArgumentParser(description='A WeMo switch controller for sous-vide cooking')
 parser.add_argument('--list', help='List available WeMo switches', action='store_true')
 parser.add_argument('--mon', help='Monitor current temperature without controlling a switch', action='store_true')
 parser.add_argument('-s', dest='switch', metavar="'Switch Name'", help='WeMo Switch Name')
@@ -16,7 +17,11 @@ parser.add_argument('-t', dest='temp', help='Target Temperature suffixed with ei
 parser.add_argument('-T', dest='time', type=int, help='Timer in minutes')
 parser.add_argument('-f', dest='fudge', help='Fudge factor. Pre-emptively turn switch off/on. Provide value w/ suffix: C or F')
 parser.add_argument('-a', dest='accuracy', type=int, default=15, help='How often to check the temperature in seconds (default 15)')
+parser.add_argument('-o', dest='out', metavar='graph.png', help='Output a PNG temperature graph')
 args = parser.parse_args()
+
+accuracy = args.accuracy
+
 
 if args.mon is True and args.list is True:
     parser.error("mon and list are mutually exclusive commands")
@@ -97,37 +102,51 @@ class maintainTemp:
 
     def run(self, switch, target, targetScale, lagValue):
         if lagValue is not None:
-            if lagValue[-1] == "%":
-                targetHigh = (target * (1 + (float(lagValue)/100)))
-                targetLow = (target * (1 - (float(lagValue)/100)))
-            elif lagValue[-1] == "F":
+            scale = lagValue[-1]
+            lagValue = float(lagValue[:-1])
+            if scale == "%":
+                targetHigh = (target * (1 + (lagValue/100)))
+                targetLow = (target * (1 - (lagValue/100)))
+            elif scale == "F":
                 targetHigh = (target + ((lagValue - 32) / 1.8))
                 targetLow = (target - ((lagValue - 32) / 1.8))
-            elif lagValue[-1] == "C":
+            elif scale == "C":
                 targetHigh = (target + lagValue)
                 targetLow = (target - lagValue)
+            print("Low threshold: %s, Target: %s, High threshold: %s" % (targetLow, target, targetHigh))
         else:
             targetHigh = target
             targetLow = target
+
+        previousTemp = getTemp()
         while self._running:
             currentTemp = getTemp()
             currentState = getSwitch(switch)
             if targetScale == "F":
                 currentTemp = currentTemp * 1.8 + 32
             print("Current temp: %s%s @ %s - Switch %s is %s" % (currentTemp, targetScale, time.strftime("%I:%M %p", time.localtime()), switch.name, currentState))
-            if currentTemp < targetHigh and currentState is False:
+
+            if currentTemp < targetLow and currentState is False:
                 switchOn(switch)
-            elif currentTemp < targetHigh and currentState is True:
+            elif currentTemp < targetLow and currentState is True:
                 pass
-            elif currentTemp >= targetLow and currentState is True:
-                switchOff(switch)
-            elif currentTemp >= targetLow and currentState is False:
+            elif targetLow < currentTemp < target and currentState is True:
+                if currentTemp < previousTemp:
+                    pass                # We're still dropping, leave the switch on
+                else:
+                    switchOff(switch)   # We're heating up and we're above the targetLow
+            elif currentTemp > targetHigh and currentState is False:
                 pass
+            elif target < currentTemp < targetHigh and currentState is True:
+                if currentTemp > previousTemp:
+                    switchOff(switch)   # We're heating up and we're above the target
+                else:
+                    pass                # we're still cooling down, leave the switch on
+
             time.sleep(accuracy)
+            previousTemp = currentTemp
 
 def main():
-
-    accuracy = args.accuracy
 
     if args.list:
         env = Environment()
@@ -148,7 +167,7 @@ def main():
 
 
     if args.fudge:
-        lagValue = args.fudge[:-1]
+        lagValue = args.fudge
     else:
         lagValue = None
 
@@ -159,7 +178,7 @@ def main():
         env.start()
         env.discover(seconds=4)
 
-        switchName = args.s
+        switchName = args.switch
         origTarget = args.temp
         timer = (int(args.time) * 60)
 
@@ -173,11 +192,11 @@ def main():
         try:
             targetScale = origTarget[-1]
             if targetScale == "F":
-                targetF = int(origTarget[:-1])
+                targetF = float(origTarget[:-1])
                 # Convert to celsius because we're not American
                 target = ((targetF - 32) / 1.8)
             elif targetScale == "C":
-                target = int(origTarget[:-1])
+                target = float(origTarget[:-1])
             else:
                 print("Error: Please specify either [C]elsius or [F]ahrenheit")
                 exit(1)
@@ -206,8 +225,10 @@ def main():
         raw_input("Press Enter to start the %s minute timer\n" % (timer/60))
         startTime = int(time.time())
         currentTime = startTime
+        readableStart = time.strftime("%I:%M %p", time.localtime(startTime))
+        readableFinish = time.strftime("%I:%M %p", time.localtime(startTime + timer))
         temp = {} # Build a dict to keep track of temperature
-        print("Timer started, start time: %s\n" % time.strftime("%I:%M %p", time.localtime(startTime)))
+        print("Timer started, start time: %s finish time: %s\n" % (readableStart, readableFinish))
         while currentTime < (startTime + timer):
             time.sleep(accuracy)
             currentTime = time.time()
@@ -230,11 +251,11 @@ def main():
         print("Timer %s mins reached. Switch %s is now off" % ((timer/60), switch.name))
         print("Average temperature was %s%s with a %s second accuracy" % (round(average,3), targetScale, accuracy))
 
-        if args.o:
+        if args.out:
             try:
-                outfile = args.o
+                outfile = args.out
             except:
-                parse.help
+                parser.print_help()
             drawGraph(temp, outfile, targetScale)
     else:
         # If they haven't provided enough detail, print help
