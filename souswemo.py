@@ -142,6 +142,8 @@ class maintainTemp:
                     switchOff(switch)   # We're heating up and we're above the target
                 else:
                     pass                # we're still cooling down, leave the switch on
+            elif currentTemp > targetHigh:
+                switchOff(switch)
 
             time.sleep(accuracy)
             previousTemp = currentTemp
