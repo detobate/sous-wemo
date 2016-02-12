@@ -22,10 +22,8 @@ args = parser.parse_args()
 
 accuracy = args.accuracy
 
-
 if args.mon is True and args.list is True:
     parser.error("mon and list are mutually exclusive commands")
-
 
 def listSwitches(env):
     print('Available switch names are:')
@@ -126,23 +124,23 @@ class maintainTemp:
                 currentTemp = currentTemp * 1.8 + 32
             print("Current temp: %s%s @ %s - Switch %s is %s" % (currentTemp, targetScale, time.strftime("%I:%M %p", time.localtime()), switch.name, currentState))
 
-            if currentTemp < targetLow and currentState is False:
+            if currentTemp <= targetLow and currentState is False:
                 switchOn(switch)
-            elif currentTemp < targetLow and currentState is True:
+            elif currentTemp <= targetLow and currentState is True:
                 pass
             elif targetLow < currentTemp < target and currentState is True:
-                if currentTemp < previousTemp:
+                if currentTemp <= previousTemp:
                     pass                # We're still dropping, leave the switch on
                 else:
                     switchOff(switch)   # We're heating up and we're above the targetLow
-            elif currentTemp > targetHigh and currentState is False:
+            elif currentTemp >= targetHigh and currentState is False:
                 pass
-            elif target < currentTemp < targetHigh and currentState is True:
+            elif target <= currentTemp < targetHigh and currentState is True:
                 if currentTemp > previousTemp:
                     switchOff(switch)   # We're heating up and we're above the target
                 else:
                     pass                # we're still cooling down, leave the switch on
-            elif currentTemp > targetHigh:
+            elif currentTemp >= targetHigh:
                 switchOff(switch)
 
             time.sleep(accuracy)
