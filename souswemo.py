@@ -124,9 +124,9 @@ class maintainTemp:
                 currentTemp = currentTemp * 1.8 + 32
             print("Current temp: %s%s @ %s - Switch %s is %s" % (currentTemp, targetScale, time.strftime("%I:%M %p", time.localtime()), switch.name, currentState))
 
-            if currentTemp <= targetLow and currentState is False:
+            if currentTemp < targetLow and currentState is False:
                 switchOn(switch)
-            elif currentTemp <= targetLow and currentState is True:
+            elif currentTemp < targetLow and currentState is True:
                 pass
             elif targetLow <= currentTemp < target and currentState is True:
                 if currentTemp <= previousTemp:
@@ -144,12 +144,12 @@ class maintainTemp:
             elif targetHigh <= currentTemp and currentState is True:
                 switchOff(switch)       # We overshot targetHigh somehow.  Turn off.
 
-            elif target <= currentTemp < targetHigh and currentState is False:
+            elif target <= currentTemp <= targetHigh and currentState is False:
                 if currentTemp < previousTemp:
                     switchOn(switch)    # We're cooling down, and we're below the high threshold
                 else:
                     pass                # we're still cooling down, leave the switch on
-            elif target <= currentTemp < targetHigh and currentState is True:
+            elif target <= currentTemp <= targetHigh and currentState is True:
                 if currentTemp > previousTemp:
                     switchOff(switch)   # We're heating up and we're above the target
                 else:
