@@ -111,6 +111,11 @@ class maintainTemp:
             elif scale == "C":
                 targetHigh = (target + lagValue)
                 targetLow = (target - lagValue)
+            else:
+                print("Error: Please provide a scale for the fudge factor. [C/F/%]")
+                parser.print_help()
+                exit(1)
+
             print("Low threshold: %s, Target: %s, High threshold: %s" % (targetLow, target, targetHigh))
         else:
             targetHigh = target
