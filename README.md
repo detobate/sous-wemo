@@ -11,19 +11,20 @@ Install the required python modules:
 
 Usage:
 
-    usage: souswemo.py [-h] [--list] [--mon] [-s 'Switch Name'] [-t TEMP] [-T TIME] [-f FUDGE]
+    usage: souswemo.py [-h] [--list] [--mon] [-s 'Switch Name'] [-t TEMP]
+                   [-T TIME] [-f FUDGE] [-a ACCURACY]
 
-    A WeMo control for sous-vide cooking
+    A WeMo switch controller for sous-vide cooking
 
     optional arguments:
-      -h, --help      show this help message and exit
-      --list          List available WeMo switches
-      --mon           Monitor current temperature without controlling a switch
-      -s Switch Name  WeMo Switch Name
-      -t TEMP         Target Temperature suffixed with either C or F
-      -T TIME         Timer in minutes
-      -f FUDGE        Fudge factor. Pre-emptively turn switch off/on. Provide
-                      value w/ suffix: C or F
+        -h, --help        show this help message and exit
+        --list            List available WeMo switches
+        --mon             Monitor current temperature without controlling a switch
+        -s 'Switch Name'  WeMo Switch Name
+        -t TEMP           Target Temperature suffixed with either C or F
+        -T TIME           Timer in minutes
+        -f FUDGE          Fudge factor. Pre-emptively turn switch off/on. Provide value w/ suffix: C or F
+        -a ACCURACY       How often to check the temperature in seconds (default 15)
 
 Example:
 
@@ -79,7 +80,7 @@ Troubleshooting:
 ----------------
 Q: My switch isn't found but I can see it in the WeMo app.
 
-A: Try increasing the [discovery timer](https://github.com/detobate/sous-wemo/blob/master/souswemo.py#L134)
+A: Try increasing the [discovery timer](https://github.com/detobate/sous-wemo/blob/master/souswemo.py#L156)
 
 Q: It can't find my temperature probe.
 

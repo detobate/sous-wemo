@@ -3,8 +3,8 @@ import sys
 import time
 import ouimeaux
 import argparse
-import pygal
-import cairo
+#import pygal
+#import cairo
 from threading import Thread
 from w1thermsensor import W1ThermSensor
 from ouimeaux.environment import Environment
@@ -17,7 +17,7 @@ parser.add_argument('-t', dest='temp', help='Target Temperature suffixed with ei
 parser.add_argument('-T', dest='time', type=int, help='Timer in minutes')
 parser.add_argument('-f', dest='fudge', help='Fudge factor. Pre-emptively turn switch off/on. Provide value w/ suffix: C or F')
 parser.add_argument('-a', dest='accuracy', type=int, default=15, help='How often to check the temperature in seconds (default 15)')
-parser.add_argument('-o', dest='out', metavar='graph.png', help='Output a PNG temperature graph')
+#parser.add_argument('-o', dest='out', metavar='graph.png', help='Output a PNG temperature graph')
 args = parser.parse_args()
 
 accuracy = args.accuracy
@@ -268,12 +268,15 @@ def main():
         print("Timer %s mins reached. Switch %s is now off" % ((timer/60), switch.name))
         print("Average temperature was %s%s with a %s second accuracy" % (round(average,3), targetScale, accuracy))
 
+
+''' FIXME:
         if args.out:
             try:
                 outfile = args.out
             except:
                 parser.print_help()
             drawGraph(temp, outfile, targetScale)
+            '''
     else:
         # If they haven't provided enough detail, print help
         print("\nYou must provide either --list, --mon, or all 3 of -s, -t and -T\n")
