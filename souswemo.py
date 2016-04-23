@@ -269,14 +269,13 @@ def main():
         print("Average temperature was %s%s with a %s second accuracy" % (round(average,3), targetScale, accuracy))
 
 
-''' FIXME:
-        if args.out:
-            try:
-                outfile = args.out
-            except:
-                parser.print_help()
-            drawGraph(temp, outfile, targetScale)
-            '''
+# FIXME:
+#        if args.out:
+#            try:
+#                outfile = args.out
+#            except:
+#                parser.print_help()
+#            drawGraph(temp, outfile, targetScale)
     else:
         # If they haven't provided enough detail, print help
         print("\nYou must provide either --list, --mon, or all 3 of -s, -t and -T\n")
